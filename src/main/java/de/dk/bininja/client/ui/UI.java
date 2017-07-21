@@ -1,0 +1,16 @@
+package de.dk.bininja.client.ui;
+
+import de.dk.bininja.client.model.DownloadMetadata;
+
+public interface UI {
+   public void start();
+   public void show(String format, Object... args);
+   public void showError(String errorMsg, Object... args);
+   public void alert(String format, Object... args);
+   public void alertError(String errorMsg, Object... args);
+   public void connected();
+   public void disconnected();
+   public void prepareDownload(DownloadMetadata metadata) throws IllegalStateException;
+   public void setDownloadTargetTo(DownloadMetadata metadata);
+   public void close();
+}
