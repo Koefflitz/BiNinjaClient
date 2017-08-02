@@ -1,7 +1,7 @@
 package de.dk.bininja.client.entrypoint;
 
 import de.dk.bininja.client.controller.MasterControlProgram;
-import de.dk.bininja.client.core.Processor;
+import de.dk.bininja.client.core.Logic;
 import de.dk.bininja.client.ui.view.ClientView;
 import de.dk.bininja.net.Base64Connection;
 import javafx.application.Application;
@@ -9,13 +9,13 @@ import javafx.stage.Stage;
 
 public class JavaFXUIAdapter extends Application {
    private static MasterControlProgram mcp;
-   private static Processor processor;
+   private static Logic processor;
 
    public JavaFXUIAdapter() {
 
    }
 
-   public static void start(MasterControlProgram mcp, Processor processor) {
+   public static void start(MasterControlProgram mcp, Logic processor) {
       JavaFXUIAdapter.mcp = mcp;
       JavaFXUIAdapter.processor = processor;
       launch(new String[0]);

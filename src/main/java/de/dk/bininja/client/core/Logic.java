@@ -23,13 +23,13 @@ import de.dk.util.StringUtils;
 import de.dk.util.channel.Channel;
 import de.dk.util.channel.ChannelClosedException;
 
-public class Processor {
-   private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class);
+public class Logic {
+   private static final Logger LOGGER = LoggerFactory.getLogger(Logic.class);
 
    private final ProcessorController controller;
    private DownloadManager<ClientDownload> downloads = new DownloadManager<>();
 
-   public Processor(ProcessorController controller) {
+   public Logic(ProcessorController controller) {
       this.controller = controller;
    }
 

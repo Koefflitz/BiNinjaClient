@@ -6,7 +6,7 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.dk.bininja.client.core.Processor;
+import de.dk.bininja.client.core.Logic;
 import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.net.ClientDownload;
 import de.dk.bininja.client.ui.UI;
@@ -27,7 +27,7 @@ public class MasterControlProgram implements ProcessorController,
 
    private static final long CONNECTION_CLOSE_TIMEOUT = 8000;
 
-   private Processor processor;
+   private Logic processor;
    private UI view;
 
    private Base64Connection connection;
@@ -39,7 +39,7 @@ public class MasterControlProgram implements ProcessorController,
 
    }
 
-   public void start(Processor processor, UI ui) {
+   public void start(Logic processor, UI ui) {
       this.processor = processor;
       this.view = ui;
       view.start();
