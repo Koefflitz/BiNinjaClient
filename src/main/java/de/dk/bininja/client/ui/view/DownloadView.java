@@ -5,8 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 
-import de.dk.bininja.client.controller.Controller;
 import de.dk.bininja.client.model.DownloadMetadata;
+import de.dk.bininja.client.ui.UIController;
 import de.dk.bininja.net.DownloadListener;
 import de.dk.bininja.net.DownloadState;
 import de.dk.util.StringUtils;
@@ -40,7 +40,7 @@ public class DownloadView extends Pane implements DownloadListener {
    private static final DecimalFormat FORMAT = new DecimalFormat("#.##");
    private static final float PROGRESS_UPDATES_PER_SECOND = 2;
 
-   private final Controller controller;
+   private final UIController controller;
 
    private final Label lblUrl;
    private final TextField txtUrl;
@@ -63,7 +63,7 @@ public class DownloadView extends Pane implements DownloadListener {
    private MemoryValue writeProgress = new MemoryValue(0);
    private MemoryValue length;
 
-   public DownloadView(Controller controller) {
+   public DownloadView(UIController controller) {
       this.controller = controller;
 
       this.lblUrl = new Label("URL");

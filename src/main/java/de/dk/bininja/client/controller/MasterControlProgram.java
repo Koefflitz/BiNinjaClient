@@ -10,6 +10,7 @@ import de.dk.bininja.client.core.Logic;
 import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.net.ClientDownload;
 import de.dk.bininja.client.ui.UI;
+import de.dk.bininja.client.ui.UIController;
 import de.dk.bininja.net.Base64Connection;
 import de.dk.bininja.net.ConnectionType;
 import de.dk.bininja.net.DownloadListener;
@@ -21,14 +22,14 @@ import de.dk.util.net.ConnectionListener;
 import de.dk.util.net.ReadingException;
 
 public class MasterControlProgram implements ProcessorController,
-                                             Controller,
+                                             UIController,
                                              ConnectionListener {
    private static final Logger LOGGER = LoggerFactory.getLogger(MasterControlProgram.class);
 
    private static final long CONNECTION_CLOSE_TIMEOUT = 8000;
 
    private Logic processor;
-   private UI view;
+   private UI ui;
 
    private Base64Connection connection;
    private ChannelManager channelManager;
@@ -41,8 +42,8 @@ public class MasterControlProgram implements ProcessorController,
 
    public void start(Logic processor, UI ui) {
       this.processor = processor;
-      this.view = ui;
-      view.start();
+      this.ui = ui;
+      ui.start();
    }
 
    @Override
@@ -65,11 +66,11 @@ public class MasterControlProgram implements ProcessorController,
          connection.start();
          this.channelManager = connection.attachChannelManager();
          LOGGER.info("Connection with " + host + " established");
-         view.connected();
-         view.show("Verbindung zu " + host + " hergestellt");
+         ui.connected();
+         ui.show("Verbindung zu " + host + " hergestellt");
       } catch (IOException e) {
          LOGGER.error("Connecting to \"" + host + "\" failed", e);
-         view.showError("Verbinden fehlgeschlagen.\n" + e.getMessage());
+         ui.showError("Verbinden fehlgeschlagen.\n" + e.getMessage());
       }
    }
 
@@ -85,7 +86,7 @@ public class MasterControlProgram implements ProcessorController,
       } catch (IOException | ChannelDeclinedException | InterruptedException | TimeoutException e) {
          String errorMsg = "Error initializing download: " + metadata;
          LOGGER.error(errorMsg, e);
-         view.showError("Downloadanfrage fehlgeschlagen.\n%s", e.getMessage());
+         ui.showError("Downloadanfrage fehlgeschlagen.\n%s", e.getMessage());
          if (downloadChannel != null)
             close(downloadChannel);
          return false;
@@ -93,7 +94,7 @@ public class MasterControlProgram implements ProcessorController,
       if (download == null)
          return false;
 
-      view.prepareDownload(metadata);
+      ui.prepareDownload(metadata);
       download.addListener(listener);
       try {
          processor.startDownload(downloadChannel, download);
@@ -101,7 +102,7 @@ public class MasterControlProgram implements ProcessorController,
       } catch (IOException e) {
          String msg = "Error starting the download " + metadata;
          LOGGER.debug(msg, e);
-         view.showError("Fehler beim Starten des Downloads vom Server");
+         ui.showError("Fehler beim Starten des Downloads vom Server");
          close(downloadChannel);
          return false;
       }
@@ -120,13 +121,13 @@ public class MasterControlProgram implements ProcessorController,
 
    @Override
    public void setDownloadTargetTo(DownloadMetadata metadata) {
-      view.setDownloadTargetTo(metadata);
+      ui.setDownloadTargetTo(metadata);
    }
 
    @Override
    public void readingError(ReadingException e) {
       LOGGER.warn(e.getMessage(), e);
-      view.alert("Hackerwarnung!"
+      ui.alert("Hackerwarnung!"
                + "Eine unbekannte Nachricht ist soeben eingegangen!"
                + "Versucht da jemand Nachrichten in diese Anwendung einzuschleusen?");
    }
@@ -145,8 +146,8 @@ public class MasterControlProgram implements ProcessorController,
          return;
 
       LOGGER.debug("Connection to server " + connection.getInetAddress() + " closed.");
-      view.alert("Verbindung zum Server verloren.");
-      view.disconnected();
+      ui.alert("Verbindung zum Server verloren.");
+      ui.disconnected();
    }
 
    public void stop() {
@@ -154,7 +155,7 @@ public class MasterControlProgram implements ProcessorController,
       stopping  = true;
 
       processor.close();
-      view.close();
+      ui.close();
 
       boolean closeNecessary = connection != null
                                && connection.getSocket().isConnected()

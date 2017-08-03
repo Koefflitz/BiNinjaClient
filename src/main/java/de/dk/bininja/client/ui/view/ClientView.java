@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import de.dk.bininja.client.controller.Controller;
 import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.ui.UI;
+import de.dk.bininja.client.ui.UIController;
 import de.dk.util.FileUtils;
 import de.dk.util.StringUtils;
 import de.dk.util.javafxUtils.NumberTextField;
@@ -53,9 +53,9 @@ public class ClientView extends Pane implements UI {
 
    private final Label lblMsg;
 
-   private final Controller listener;
+   private final UIController listener;
 
-   public ClientView(Stage window, Controller listener, int defaultPort) {
+   public ClientView(Stage window, UIController listener, int defaultPort) {
       this.window = window;
       this.listener = Objects.requireNonNull(listener);
 
