@@ -8,8 +8,7 @@ public interface UI {
    public void showError(String errorMsg, Object... args);
    public void alert(String format, Object... args);
    public void alertError(String errorMsg, Object... args);
-   public void connected();
-   public void disconnected();
+   public void setConnected(boolean connected);
    public void prepareDownload(DownloadMetadata metadata) throws IllegalStateException;
    public void setDownloadTargetTo(DownloadMetadata metadata);
    public void close();

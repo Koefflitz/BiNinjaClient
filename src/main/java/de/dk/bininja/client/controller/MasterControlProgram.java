@@ -1,6 +1,7 @@
 package de.dk.bininja.client.controller;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public class MasterControlProgram implements ProcessorController,
    }
 
    @Override
-   public void connectTo(String host, int port) {
+   public void connect(String host, int port) throws IOException, UnknownHostException {
       if (connection != null && connection.isRunning()) {
          processor.cancelDownloads();
          try {
@@ -60,18 +61,19 @@ public class MasterControlProgram implements ProcessorController,
       LOGGER.info("Establishing connection to \"" + host + "\".");
       try {
          this.connection = new Base64Connection(host, port);
-         LOGGER.debug("Sending initial message, to tell the server, that I am a download client.");
-         connection.sendRaw(ConnectionType.CLIENT.getString());
-         connection.addListener(this);
-         connection.start();
-         this.channelManager = connection.attachChannelManager();
-         LOGGER.info("Connection with " + host + " established");
-         ui.connected();
-         ui.show("Verbindung zu " + host + " hergestellt");
       } catch (IOException e) {
          LOGGER.error("Connecting to \"" + host + "\" failed", e);
-         ui.showError("Verbinden fehlgeschlagen.\n" + e.getMessage());
+         throw e;
       }
+
+      LOGGER.debug("Sending initial message, to tell the server, that I am a download client.");
+      connection.sendRaw(ConnectionType.CLIENT.getString());
+      connection.addListener(this);
+      connection.start();
+      this.channelManager = connection.attachChannelManager();
+      LOGGER.info("Connection with " + host + " established");
+      ui.setConnected(true);
+      ui.show("Verbindung zu " + host + " hergestellt");
    }
 
    @Override
@@ -147,10 +149,11 @@ public class MasterControlProgram implements ProcessorController,
 
       LOGGER.debug("Connection to server " + connection.getInetAddress() + " closed.");
       ui.alert("Verbindung zum Server verloren.");
-      ui.disconnected();
+      ui.setConnected(false);
    }
 
-   public void stop() {
+   @Override
+   public void exit() {
       LOGGER.info("Freeing resources before terminating");
       stopping  = true;
 

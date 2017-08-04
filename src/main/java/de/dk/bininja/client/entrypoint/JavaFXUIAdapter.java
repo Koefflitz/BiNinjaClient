@@ -29,7 +29,7 @@ public class JavaFXUIAdapter extends Application {
 
    @Override
    public void stop() {
-      mcp.stop();
+      mcp.exit();
    }
 
 }

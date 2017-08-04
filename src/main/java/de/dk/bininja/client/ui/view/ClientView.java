@@ -1,6 +1,7 @@
 package de.dk.bininja.client.ui.view;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -160,39 +161,14 @@ public class ClientView extends Pane implements UI {
          if (!result.isPresent() || result.get() != ButtonType.YES)
             return;
       }
-      listener.connectTo(txtServer.getText(), txtPort.getValue());
-   }
 
-   @Override
-   public void show(String format, Object... args) {
-      show(String.format(format, args), false);
-   }
-
-   @Override
-   public void showError(String errorMsg, Object... args) {
-      show(String.format(errorMsg, args), true);
-   }
-
-   @Override
-   public void alert(String format, Object... args) {
-      Platform.runLater(() -> {
-         Alert alert = new Alert(AlertType.INFORMATION,
-                                 String.format(format, args),
-                                 ButtonType.CLOSE);
-
-         alert.setTitle("BiNinjaClient - Mitteilung");
-         alert.showAndWait();
-      });
-   }
-
-   @Override
-   public void alertError(String errorMsg, Object... args) {
-      Alert alert = new Alert(AlertType.ERROR,
-                              errorMsg,
-                              ButtonType.APPLY);
-
-      alert.setTitle("BiNinjaClient - Fehler!");
-      alert.showAndWait();
+      String host = txtServer.getText();
+      int port = txtPort.getValue();
+      try {
+         listener.connect(host, port);
+      } catch (IOException ex) {
+         showError("Could not connect to " + host + ":" + port + " - " + ex.getMessage());
+      }
    }
 
    @Override
@@ -233,8 +209,35 @@ public class ClientView extends Pane implements UI {
    }
 
    @Override
-   public void close() {
-      window.close();
+   public void show(String format, Object... args) {
+      show(String.format(format, args), false);
+   }
+
+   @Override
+   public void showError(String errorMsg, Object... args) {
+      show(String.format(errorMsg, args), true);
+   }
+
+   @Override
+   public void alert(String format, Object... args) {
+      Platform.runLater(() -> {
+         Alert alert = new Alert(AlertType.INFORMATION,
+                                 String.format(format, args),
+                                 ButtonType.CLOSE);
+
+         alert.setTitle("BiNinjaClient - Mitteilung");
+         alert.showAndWait();
+      });
+   }
+
+   @Override
+   public void alertError(String errorMsg, Object... args) {
+      Alert alert = new Alert(AlertType.ERROR,
+                              errorMsg,
+                              ButtonType.APPLY);
+
+      alert.setTitle("BiNinjaClient - Fehler!");
+      alert.showAndWait();
    }
 
    public void show(String msg, boolean error) {
@@ -243,6 +246,13 @@ public class ClientView extends Pane implements UI {
    }
 
    @Override
+   public void setConnected(boolean connected) {
+      if (connected)
+         connected();
+      else
+         disconnected();
+   }
+
    public void connected() {
       if (downloads.size() > 0)
          return;
@@ -260,7 +270,6 @@ public class ClientView extends Pane implements UI {
       });
    }
 
-   @Override
    public void disconnected() {
       Platform.runLater(() -> {
          for (DownloadView dv : downloads)
@@ -269,6 +278,11 @@ public class ClientView extends Pane implements UI {
          downloads.clear();
          getChildren().remove(line);
       });
+   }
+
+   @Override
+   public void close() {
+      window.close();
    }
 
 }
