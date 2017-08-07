@@ -6,6 +6,10 @@ import java.net.URL;
 import de.dk.util.FileUtils;
 import de.dk.util.StringUtils;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class DownloadMetadata {
    private static int idCounter = 0;
 

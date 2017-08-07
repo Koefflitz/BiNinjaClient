@@ -13,6 +13,10 @@ import de.dk.bininja.net.packet.download.DownloadRequestPacket;
 import de.dk.util.channel.Channel;
 import de.dk.util.channel.ChannelListener;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class DownloadRequest implements ChannelListener<DownloadPacket> {
    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRequest.class);
 

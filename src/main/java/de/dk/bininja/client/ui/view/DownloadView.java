@@ -33,6 +33,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class DownloadView extends Pane implements DownloadListener {
    public static final int HEIGHT = 166;
 

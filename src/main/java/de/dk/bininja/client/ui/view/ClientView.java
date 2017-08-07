@@ -28,6 +28,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class ClientView extends Pane implements UI {
    private static final String TITLE = "BiNinja Client";
 

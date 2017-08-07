@@ -23,6 +23,10 @@ import de.dk.util.StringUtils;
 import de.dk.util.channel.Channel;
 import de.dk.util.channel.ChannelClosedException;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class Logic {
    private static final Logger LOGGER = LoggerFactory.getLogger(Logic.class);
 

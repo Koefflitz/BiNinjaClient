@@ -22,6 +22,10 @@ import de.dk.util.channel.ChannelManager;
 import de.dk.util.net.ConnectionListener;
 import de.dk.util.net.ReadingException;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class MasterControlProgram implements ProcessorController,
                                              UIController,
                                              ConnectionListener {

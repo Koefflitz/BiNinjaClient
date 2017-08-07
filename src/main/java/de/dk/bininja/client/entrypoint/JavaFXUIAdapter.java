@@ -7,6 +7,10 @@ import de.dk.bininja.net.Base64Connection;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
 public class JavaFXUIAdapter extends Application {
    private static MasterControlProgram mcp;
    private static Logic processor;
