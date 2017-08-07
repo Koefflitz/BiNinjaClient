@@ -14,21 +14,23 @@ import javafx.stage.Stage;
 public class JavaFXUIAdapter extends Application {
    private static MasterControlProgram mcp;
    private static Logic processor;
+   private static ParsedArguments args;
 
    public JavaFXUIAdapter() {
 
    }
 
-   public static void start(MasterControlProgram mcp, Logic processor) {
+   public static void start(MasterControlProgram mcp, Logic processor, ParsedArguments args) {
       JavaFXUIAdapter.mcp = mcp;
       JavaFXUIAdapter.processor = processor;
+      JavaFXUIAdapter.args = args;
       launch(new String[0]);
    }
 
    @Override
    public void start(Stage window) {
       ClientView view = new ClientView(window, mcp, Base64Connection.PORT);
-      mcp.start(processor, view);
+      mcp.start(processor, view, args);
    }
 
    @Override

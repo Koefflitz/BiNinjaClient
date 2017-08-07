@@ -12,4 +12,5 @@ public interface UIController extends CliController {
    public boolean requestDownloadFrom(DownloadMetadata metadata, DownloadListener listener);
    public int activeDownloadCount();
    public String getConnectionAsString();
+   public void waitForDownloads() throws InterruptedException;
 }

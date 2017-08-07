@@ -1,17 +1,22 @@
 package de.dk.bininja.client.controller;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.UnknownHostException;
+import java.io.InputStreamReader;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.dk.bininja.client.core.Logic;
+import de.dk.bininja.client.entrypoint.ParsedArguments;
 import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.net.ClientDownload;
 import de.dk.bininja.client.ui.UI;
 import de.dk.bininja.client.ui.UIController;
+import de.dk.bininja.client.ui.cli.ClientCli;
 import de.dk.bininja.net.Base64Connection;
 import de.dk.bininja.net.ConnectionRefusedException;
 import de.dk.bininja.net.ConnectionRequest;
@@ -48,10 +53,54 @@ public class MasterControlProgram implements ProcessorController,
 
    }
 
-   public void start(Logic processor, UI ui) {
+   public void start(Logic processor, UI ui, ParsedArguments args) {
       this.processor = processor;
       this.ui = ui;
+
+      int port = args.isPortSpecified() ? args.getPort() : Base64Connection.PORT;
+      if (args.getHost() != null) {
+         try {
+            connect(args.getHost(), port);
+         } catch (IOException | ConnectionRefusedException e) {
+            String msg = "Could not connect to " + args.getHost() + ":" + port;
+            LOGGER.info(msg, e);
+            ui.showError(msg + "\n" + e.getMessage());
+            return;
+         }
+      }
+
+      if (args.getCommand() != null) {
+         ClientCli cli = (ClientCli) ui;
+         cli.enter(args.getCommand());
+         exit();
+         return;
+      } else if (args.getScript() != null) {
+         try {
+            executeScript(args.getScript(), (ClientCli) ui);
+         } catch (IOException e) {
+            String msg = "Error accessing script " + args.getScript().getAbsolutePath();
+            LOGGER.error(msg, e);
+            ui.showError(msg + "\n" + e.getMessage());
+         }
+         return;
+      }
+
       ui.start();
+   }
+
+   private void executeScript(File script, ClientCli cli) throws IOException {
+      BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(script)));
+
+      try {
+         for (String line = in.readLine(); in != null; line = in.readLine())
+            cli.enter(line);
+      } finally {
+         try {
+            in.close();
+         } catch (IOException e) {
+            LOGGER.warn("Error closing " + script.getAbsolutePath(), e);
+         }
+      }
    }
 
    @Override
@@ -118,6 +167,11 @@ public class MasterControlProgram implements ProcessorController,
          close(downloadChannel);
          return false;
       }
+   }
+
+   @Override
+   public void waitForDownloads() throws InterruptedException {
+      processor.waitForDownloads();
    }
 
    @Override

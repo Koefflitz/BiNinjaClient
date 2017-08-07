@@ -1,0 +1,85 @@
+package de.dk.bininja.client.ui.cli;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+
+import de.dk.bininja.client.model.DownloadMetadata;
+import de.dk.bininja.client.ui.UI;
+import de.dk.bininja.client.ui.UIController;
+import de.dk.bininja.net.DownloadListener;
+import de.dk.bininja.ui.cli.Cli;
+import de.dk.bininja.ui.cli.CliCommand;
+import de.dk.util.StringUtils;
+
+/**
+ * @author David Koettlitz
+ * <br>Erstellt am 07.08.2017
+ */
+public class ClientCli extends Cli<UIController> implements UI {
+   private static final String PROMPT_NOT_CONNECTED = "BiNinja (n.c.)>";
+   private static final String PROMPT_CONNECTED = "BiNinjaClient>";
+
+   private DownloadCliViewManager downloads = new DownloadCliViewManager();
+
+   {
+      commands.add(new DownloadCommand(this::newDownload, in));
+      commands.add(new ExitCommand(in));
+   }
+
+   public ClientCli(UIController controller, BufferedReader in) {
+      super(controller, getCommands(), in, PROMPT_CONNECTED, PROMPT_NOT_CONNECTED);
+   }
+
+   public ClientCli(UIController controller) {
+      super(controller, getCommands(), PROMPT_CONNECTED, PROMPT_NOT_CONNECTED);
+   }
+
+   private static Collection<CliCommand<? super UIController>> getCommands() {
+      return new LinkedList<>();
+   }
+
+   @Override
+   public void prepareDownload(DownloadMetadata metadata) throws IllegalStateException {
+
+   }
+
+   private DownloadListener newDownload() {
+      DownloadCliView listener = new DownloadCliView();
+      downloads.add(listener);
+      return listener;
+   }
+
+   @Override
+   public void setDownloadTargetTo(DownloadMetadata metadata) {
+      System.out.println("Please enter a target path for the download: ");
+      String input;
+      try {
+         input = in.readLine();
+      } catch (IOException e) {
+         return;
+      }
+      if (StringUtils.isBlank(input))
+         return;
+
+      File file = new File(input);
+      if (file.isDirectory()) {
+         metadata.setTargetDirectory(file);
+      } else {
+         metadata.setTargetDirectory(file.getParentFile());
+         metadata.setFileName(file.getName());
+      }
+   }
+
+   @Override
+   public void alert(String format, Object... args) {
+      show(format, args);
+   }
+
+   @Override
+   public void alertError(String errorMsg, Object... args) {
+      showError(errorMsg, args);
+   }
+}

@@ -80,6 +80,10 @@ public class Logic {
       return download;
    }
 
+   public void waitForDownloads() throws InterruptedException {
+      downloads.waitFor();
+   }
+
    private void cancelDownload(Channel<DownloadPacket> channel, String msg) {
       try {
          channel.send(new DownloadCancelPacket(msg));
