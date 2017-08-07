@@ -10,6 +10,7 @@ import java.util.Optional;
 import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.ui.UI;
 import de.dk.bininja.client.ui.UIController;
+import de.dk.bininja.net.ConnectionRefusedException;
 import de.dk.util.FileUtils;
 import de.dk.util.StringUtils;
 import de.dk.util.javafxUtils.NumberTextField;
@@ -170,7 +171,7 @@ public class ClientView extends Pane implements UI {
       int port = txtPort.getValue();
       try {
          listener.connect(host, port);
-      } catch (IOException ex) {
+      } catch (IOException | ConnectionRefusedException ex) {
          showError("Could not connect to " + host + ":" + port + " - " + ex.getMessage());
       }
    }

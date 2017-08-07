@@ -13,6 +13,8 @@ import de.dk.bininja.client.net.ClientDownload;
 import de.dk.bininja.client.ui.UI;
 import de.dk.bininja.client.ui.UIController;
 import de.dk.bininja.net.Base64Connection;
+import de.dk.bininja.net.ConnectionRefusedException;
+import de.dk.bininja.net.ConnectionRequest;
 import de.dk.bininja.net.ConnectionType;
 import de.dk.bininja.net.DownloadListener;
 import de.dk.bininja.net.packet.download.DownloadPacket;
@@ -31,6 +33,7 @@ public class MasterControlProgram implements ProcessorController,
                                              ConnectionListener {
    private static final Logger LOGGER = LoggerFactory.getLogger(MasterControlProgram.class);
 
+   private static final long CONNECTION_TIMEOUT = 8000;
    private static final long CONNECTION_CLOSE_TIMEOUT = 8000;
 
    private Logic processor;
@@ -52,7 +55,7 @@ public class MasterControlProgram implements ProcessorController,
    }
 
    @Override
-   public void connect(String host, int port) throws IOException, UnknownHostException {
+   public void connect(String host, int port) throws IOException, ConnectionRefusedException {
       if (connection != null && connection.isRunning()) {
          processor.cancelDownloads();
          try {
@@ -63,18 +66,21 @@ public class MasterControlProgram implements ProcessorController,
       }
 
       LOGGER.info("Establishing connection to \"" + host + "\".");
+      ConnectionRequest request = new ConnectionRequest(host, port);
+
       try {
-         this.connection = new Base64Connection(host, port);
-      } catch (IOException e) {
+         this.connection = request.request(ConnectionType.CLIENT, CONNECTION_TIMEOUT);
+      } catch (IOException | ConnectionRefusedException e) {
          LOGGER.error("Connecting to \"" + host + "\" failed", e);
          throw e;
+      } catch (InterruptedException e) {
+         LOGGER.info("Interrupted while establishing connection to " + host, e);
       }
 
       LOGGER.debug("Sending initial message, to tell the server, that I am a download client.");
-      connection.sendRaw(ConnectionType.CLIENT.getString());
       connection.addListener(this);
-      connection.start();
       this.channelManager = connection.attachChannelManager();
+      connection.start();
       LOGGER.info("Connection with " + host + " established");
       ui.setConnected(true);
       ui.show("Verbindung zu " + host + " hergestellt");
