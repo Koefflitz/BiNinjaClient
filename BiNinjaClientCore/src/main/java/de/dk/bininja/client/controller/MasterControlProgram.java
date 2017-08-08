@@ -16,7 +16,6 @@ import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.net.ClientDownload;
 import de.dk.bininja.client.ui.UI;
 import de.dk.bininja.client.ui.UIController;
-import de.dk.bininja.client.ui.cli.ClientCli;
 import de.dk.bininja.net.Base64Connection;
 import de.dk.bininja.net.ConnectionRefusedException;
 import de.dk.bininja.net.ConnectionRequest;
@@ -24,6 +23,7 @@ import de.dk.bininja.net.ConnectionType;
 import de.dk.bininja.net.DownloadListener;
 import de.dk.bininja.net.packet.download.DownloadCancelPacket;
 import de.dk.bininja.net.packet.download.DownloadPacket;
+import de.dk.bininja.ui.cli.Cli;
 import de.dk.util.channel.Channel;
 import de.dk.util.channel.ChannelClosedException;
 import de.dk.util.channel.ChannelDeclinedException;
@@ -72,7 +72,7 @@ public class MasterControlProgram implements ProcessorController,
       }
 
       if (args.getCommand() != null) {
-         ClientCli cli = (ClientCli) ui;
+         Cli<?> cli = (Cli<?>) ui;
          cli.enter(args.getCommand());
          try {
             processor.waitForDownloads();
@@ -83,7 +83,7 @@ public class MasterControlProgram implements ProcessorController,
          return;
       } else if (args.getScript() != null) {
          try {
-            executeScript(args.getScript(), (ClientCli) ui);
+            executeScript(args.getScript(), (Cli<?>) ui);
          } catch (IOException e) {
             String msg = "Error accessing script " + args.getScript().getAbsolutePath();
             LOGGER.error(msg, e);
@@ -98,10 +98,11 @@ public class MasterControlProgram implements ProcessorController,
          return;
       }
 
-      ui.start();
+      if (!args.isHeadless())
+         ui.start();
    }
 
-   private void executeScript(File script, ClientCli cli) throws IOException {
+   private void executeScript(File script, Cli<?> cli) throws IOException {
       BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(script)));
 
       try {

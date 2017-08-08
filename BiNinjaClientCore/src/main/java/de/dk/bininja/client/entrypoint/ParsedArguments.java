@@ -54,7 +54,11 @@ public class ParsedArguments {
    }
 
    public boolean isCli() {
-      return cli || command != null || script != null;
+      return cli || isHeadless();
+   }
+
+   public boolean isHeadless() {
+      return command != null || script != null;
    }
 
    public void setCli(boolean cli) {

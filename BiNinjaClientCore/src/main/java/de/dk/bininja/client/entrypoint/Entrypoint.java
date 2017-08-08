@@ -1,6 +1,10 @@
 package de.dk.bininja.client.entrypoint;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +12,8 @@ import org.slf4j.LoggerFactory;
 import de.dk.bininja.InvalidArgumentException;
 import de.dk.bininja.client.controller.MasterControlProgram;
 import de.dk.bininja.client.core.Logic;
-import de.dk.bininja.client.ui.cli.ClientCli;
+import de.dk.bininja.client.ui.UI;
+import de.dk.bininja.client.ui.UIController;
 import de.dk.util.opt.ArgumentModel;
 import de.dk.util.opt.ArgumentParser;
 import de.dk.util.opt.ArgumentParserBuilder;
@@ -20,6 +25,9 @@ import de.dk.util.opt.ex.ArgumentParseException;
  */
 public class Entrypoint {
    private static final Logger LOGGER = LoggerFactory.getLogger(Entrypoint.class);
+
+   private static final String GRAPHICAL_UI_CLASSNAME = "de.dk.bininja.client.ui.view.GUI";
+   private static final String COMMANDLINE_UI_CLASSNAME = "de.dk.bininja.client.ui.cli.ClientCli";
 
    public Entrypoint() {
 
@@ -39,10 +47,54 @@ public class Entrypoint {
 
       MasterControlProgram mcp = new MasterControlProgram();
       Logic processor = new Logic(mcp);
-      if (parsedArgs.isCli())
-         mcp.start(processor, new ClientCli(mcp), parsedArgs);
-      else
-         JavaFXUIAdapter.start(mcp, processor, parsedArgs);
+      UI ui;
+      String className = parsedArgs.isCli() ? COMMANDLINE_UI_CLASSNAME : GRAPHICAL_UI_CLASSNAME;
+      try {
+         ui = loadUI(className, mcp);
+      } catch (ReflectiveOperationException e) {
+         LOGGER.error("Could not load ui " + className, e);
+         if (parsedArgs.isCli()) {
+            System.err.println("Jar file corrupt. UI class " + className + " not found!");
+            System.exit(1);
+            return;
+         } else {
+            System.out.println("GUI class not available.");
+            System.out.print("Continue in command line mode? (y/n) ");
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            String input;
+            try {
+               input = in.readLine();
+            } catch (IOException ex) {
+               LOGGER.error("Could not read from stdin", e);
+               return;
+            }
+            if (input == null)
+               return;
+
+            if (!input.equals("y") && !input.equals("yes"))
+               return;
+
+            try {
+               ui = loadUI(COMMANDLINE_UI_CLASSNAME, mcp);
+            } catch (ReflectiveOperationException exeption) {
+               System.err.println("Could not load Commandline UI.");
+               e.printStackTrace();
+               System.exit(1);
+               return;
+            }
+         }
+      }
+
+      mcp.start(processor, ui, parsedArgs);
+   }
+
+   private static UI loadUI(String uiClassName, MasterControlProgram mcp) throws ReflectiveOperationException {
+      Class<?> uiClass = Class.forName(uiClassName);
+      if (!UI.class.isAssignableFrom(uiClass))
+         throw new IllegalArgumentException("The class " + uiClassName + " does not implement the UI interface.");
+
+      Constructor<?> constructor = uiClass.getConstructor(UIController.class);
+      return (UI) constructor.newInstance(mcp);
    }
 
    private static ParsedArguments parseArgs(String... args) throws ArgumentParseException {
