@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import de.dk.bininja.client.model.DownloadMetadata;
 import de.dk.bininja.client.ui.UI;
 import de.dk.bininja.client.ui.UIController;
-import de.dk.bininja.net.DownloadListener;
 import de.dk.bininja.ui.cli.Cli;
 import de.dk.bininja.ui.cli.CliCommand;
 import de.dk.util.StringUtils;
@@ -46,7 +45,7 @@ public class ClientCli extends Cli<UIController> implements UI {
 
    }
 
-   private DownloadListener newDownload() {
+   private DownloadCliView newDownload() {
       DownloadCliView listener = new DownloadCliView();
       downloads.add(listener);
       return listener;
@@ -54,22 +53,56 @@ public class ClientCli extends Cli<UIController> implements UI {
 
    @Override
    public void setDownloadTargetTo(DownloadMetadata metadata) {
-      System.out.println("Please enter a target path for the download: ");
+      if (metadata.getFileName() == null) {
+         System.out.println("The url doesn't provide information about the filename.");
+         if (metadata.getTargetDirectory() != null) {
+            String prompt = String.format("Please enter a filename for the download file to place at \"%s\": ",
+                                          metadata.getTargetDirectory());
+            String input = prompt(prompt, true);
+            if (StringUtils.isBlank(input))
+               return;
+
+            metadata.setFileName(input);
+         } else {
+            String input = prompt("Please enter a path for the download file", true);
+            if (StringUtils.isBlank(input))
+               return;
+
+            File file = new File(input);
+            metadata.setTargetDirectory(file.getParentFile());
+            metadata.setFileName(file.getName());
+         }
+      } else {
+         String prompt = "Please enter the target directory to place the download file " + metadata.getFileName();
+         String input = prompt(prompt, true);
+         if (StringUtils.isBlank(input))
+            return;
+
+         File file = new File(input);
+         if (!file.isDirectory()) {
+            System.out.println("The file " + file.getAbsolutePath() + " is not a directory.");
+            input = prompt("Use file " + file.getAbsolutePath() + " as download target file? (y/n): ", false);
+            if (input == null)
+               return;
+
+            if (input.equals("y") || input.equals("yes")) {
+               metadata.setTargetDirectory(file.getParentFile());
+               metadata.setFileName(file.getName());
+            } else {
+               setDownloadTargetTo(metadata);
+            }
+         }
+      }
+   }
+
+   @Override
+   public String prompt(String msg, boolean qToQuit) {
       String input;
       try {
-         input = in.readLine();
-      } catch (IOException e) {
-         return;
-      }
-      if (StringUtils.isBlank(input))
-         return;
-
-      File file = new File(input);
-      if (file.isDirectory()) {
-         metadata.setTargetDirectory(file);
-      } else {
-         metadata.setTargetDirectory(file.getParentFile());
-         metadata.setFileName(file.getName());
+         input = super.prompt(msg, qToQuit);
+         return input;
+      } catch (IOException | InterruptedException e) {
+         return null;
       }
    }
 

@@ -6,6 +6,7 @@ import static de.dk.bininja.net.DownloadState.ERROR;
 
 import de.dk.bininja.net.DownloadListener;
 import de.dk.bininja.net.DownloadState;
+import de.dk.bininja.ui.cli.CliCommandResult;
 
 /**
  * @author David Koettlitz
@@ -14,6 +15,7 @@ import de.dk.bininja.net.DownloadState;
 public class DownloadCliView implements DownloadListener {
    private DownloadState state;
    private DownloadCliViewManager manager;
+   private CliCommandResult commandResult;
 
    public DownloadCliView() {
 
@@ -34,25 +36,19 @@ public class DownloadCliView implements DownloadListener {
          break;
       case CANCELLED:
          System.out.println("Download cancelled.");
-         synchronized (this) {
-            notify();
-         }
+         finished();
          if (manager != null)
             manager.remove(this);
          break;
       case COMPLETE:
          System.out.println("Download complete.");
-         synchronized (this) {
-            notify();
-         }
+         finished();
          if (manager != null)
             manager.remove(this);
          break;
       case ERROR:
          System.err.println("Error during download!");
-         synchronized (this) {
-            notify();
-         }
+         finished();
          if (manager != null)
             manager.remove(this);
          break;
@@ -68,6 +64,14 @@ public class DownloadCliView implements DownloadListener {
       }
    }
 
+   private void finished() {
+      synchronized (this) {
+         notifyAll();
+      }
+      if (commandResult != null)
+         commandResult.finished();
+   }
+
    @Override
    public void loadProgress(double progress, long receivedBytes, long total) {
 
@@ -80,6 +84,14 @@ public class DownloadCliView implements DownloadListener {
 
    public void setManager(DownloadCliViewManager manager) {
       this.manager = manager;
+   }
+
+   public CliCommandResult getCommandResult() {
+      return commandResult;
+   }
+
+   public void setCommandResult(CliCommandResult commandResult) {
+      this.commandResult = commandResult;
    }
 
 }

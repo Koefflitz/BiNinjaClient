@@ -22,8 +22,10 @@ import de.dk.bininja.net.ConnectionRefusedException;
 import de.dk.bininja.net.ConnectionRequest;
 import de.dk.bininja.net.ConnectionType;
 import de.dk.bininja.net.DownloadListener;
+import de.dk.bininja.net.packet.download.DownloadCancelPacket;
 import de.dk.bininja.net.packet.download.DownloadPacket;
 import de.dk.util.channel.Channel;
+import de.dk.util.channel.ChannelClosedException;
 import de.dk.util.channel.ChannelDeclinedException;
 import de.dk.util.channel.ChannelManager;
 import de.dk.util.net.ConnectionListener;
@@ -72,6 +74,11 @@ public class MasterControlProgram implements ProcessorController,
       if (args.getCommand() != null) {
          ClientCli cli = (ClientCli) ui;
          cli.enter(args.getCommand());
+         try {
+            processor.waitForDownloads();
+         } catch (InterruptedException e) {
+            LOGGER.warn("Interrupted while waiting for remaining downloads to finish.");
+         }
          exit();
          return;
       } else if (args.getScript() != null) {
@@ -82,6 +89,12 @@ public class MasterControlProgram implements ProcessorController,
             LOGGER.error(msg, e);
             ui.showError(msg + "\n" + e.getMessage());
          }
+         try {
+            processor.waitForDownloads();
+         } catch (InterruptedException e) {
+            LOGGER.warn("Interrupted while waiting for remaining downloads to finish.");
+         }
+         exit();
          return;
       }
 
@@ -152,8 +165,15 @@ public class MasterControlProgram implements ProcessorController,
             close(downloadChannel);
          return false;
       }
-      if (download == null)
+      if (download == null) {
+         try {
+            downloadChannel.send(new DownloadCancelPacket());
+            close(downloadChannel);
+         } catch (IllegalArgumentException | ChannelClosedException | IOException e) {
+            LOGGER.warn("Could not cancel download " + metadata, e);
+         }
          return false;
+      }
 
       ui.prepareDownload(metadata);
       download.addListener(listener);

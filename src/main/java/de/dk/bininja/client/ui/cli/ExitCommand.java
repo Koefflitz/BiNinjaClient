@@ -17,13 +17,13 @@ public class ExitCommand extends CliCommand<UIController> {
    private BufferedReader in;
 
    public ExitCommand(BufferedReader in) {
-      super(NAME, NAME);
+      super(NAME);
       this.in = in;
    }
 
    @Override
-   protected CliCommandResult checkedExecute(String input, UIController controller) throws IOException,
-                                                                                           InterruptedException {
+   protected CliCommandResult execute(String input, UIController controller) throws IOException,
+                                                                                    InterruptedException {
       if (controller.activeDownloadCount() > 0) {
          if (!promptReally(controller))
             return new CliCommandResult(false, "");

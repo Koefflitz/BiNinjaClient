@@ -34,6 +34,9 @@ public class Entrypoint {
          System.exit(1);
          return;
       }
+      if (parsedArgs == null)
+         return;
+
       MasterControlProgram mcp = new MasterControlProgram();
       Logic processor = new Logic(mcp);
       if (parsedArgs.isCli())
@@ -50,6 +53,10 @@ public class Entrypoint {
 
       ArgumentParser parser = builder.buildAndGet();
       ArgumentModel result;
+      if (parser.isHelp(args)) {
+         parser.printUsage(System.out);
+         return null;
+      }
       try {
          result = parser.parseArguments(args);
       } catch (ArgumentParseException e) {
