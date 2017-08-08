@@ -89,7 +89,11 @@ public class Entrypoint {
    }
 
    private static UI loadUI(String uiClassName, MasterControlProgram mcp) throws ReflectiveOperationException {
-      Class<?> uiClass = Class.forName(uiClassName);
+
+      Class<?> uiClass = Thread.currentThread()
+                               .getContextClassLoader()
+                               .loadClass(uiClassName);
+
       if (!UI.class.isAssignableFrom(uiClass))
          throw new IllegalArgumentException("The class " + uiClassName + " does not implement the UI interface.");
 
