@@ -239,6 +239,9 @@ public class MasterControlProgram implements ProcessorController,
 
    @Override
    public void exit() {
+      if (stopping)
+         return;
+
       LOGGER.info("Freeing resources before terminating");
       stopping  = true;
 
@@ -257,6 +260,7 @@ public class MasterControlProgram implements ProcessorController,
          }
       }
 
+      stopping = false;
       LOGGER.info("BiNinjaClient out.");
    }
 

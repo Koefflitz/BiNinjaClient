@@ -63,7 +63,6 @@ public class Logic {
       LOGGER.debug("Opening OutputStream to downloadtarget: " + target.getAbsolutePath());
       FileOutputStream output;
       try {
-         target.getParentFile().mkdirs();
          output = new FileOutputStream(target);
       } catch (SecurityException | FileNotFoundException e) {
          String msg = String.format("Konnte auf Downloaddatei \"%s\" nicht zugreifen.\n%s",

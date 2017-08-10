@@ -77,8 +77,9 @@ public class Entrypoint {
             try {
                ui = loadUI(COMMANDLINE_UI_CLASSNAME, mcp);
             } catch (ReflectiveOperationException exeption) {
-               System.err.println("Could not load Commandline UI.");
-               e.printStackTrace();
+               String msg = "Could not load Commandline UI.";
+               LOGGER.error(msg, e);
+               System.err.println(msg);
                System.exit(1);
                return;
             }
@@ -89,15 +90,18 @@ public class Entrypoint {
    }
 
    private static UI loadUI(String uiClassName, MasterControlProgram mcp) throws ReflectiveOperationException {
-
+      LOGGER.debug("Loading ui class " + uiClassName);
       Class<?> uiClass = Thread.currentThread()
                                .getContextClassLoader()
                                .loadClass(uiClassName);
 
+      LOGGER.debug("UI class loaded.");
+
       if (!UI.class.isAssignableFrom(uiClass))
          throw new IllegalArgumentException("The class " + uiClassName + " does not implement the UI interface.");
 
-      Constructor<?> constructor = uiClass.getConstructor(UIController.class);
+      Constructor<?> constructor = uiClass.getDeclaredConstructor(UIController.class);
+      LOGGER.debug("Creating new instance of " + uiClassName);
       return (UI) constructor.newInstance(mcp);
    }
 

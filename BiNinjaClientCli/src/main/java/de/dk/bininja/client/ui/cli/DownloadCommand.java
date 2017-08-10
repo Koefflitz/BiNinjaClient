@@ -73,17 +73,23 @@ public class DownloadCommand extends CliCommand<UIController> {
       }
       DownloadMetadata metadata = new DownloadMetadata(url);
       String path = parsedArgs.getArgumentValue(ARG_PATH);
-      if (path == null) {
-         System.out.print("Please enter a target path for the download (q to quit): ");
-         path = in.readLine();
-         if (path.equals("q") || path.equals("quit"))
-            return new CliCommandResult(true, null);
+      File file;
+      if (path != null) {
+         file = new File(path);
+         if (!file.isDirectory()) {
+            File parent = file.getParentFile();
+            if (parent == null)
+               return new CliCommandResult(false, "Invalid download target path: \"" + path + "\"");
+            else if (!parent.exists())
+               return new CliCommandResult(false, "Could not find the parent directory of the download target " + path);
+         }
+      } else {
+         file = promptTarget();
       }
 
-      if (StringUtils.isBlank(path))
-         return new CliCommandResult(true, "Invalid path: \"" + path + "\"");
+      if (file == null)
+         return new CliCommandResult(true, null);
 
-      File file = new File(path);
       if (file.isDirectory()) {
          metadata.setTargetDirectory(file);
       } else {
@@ -92,16 +98,60 @@ public class DownloadCommand extends CliCommand<UIController> {
       }
 
       DownloadCliView downloadView = downloadViewSupplier.get();
-      controller.requestDownloadFrom(metadata, downloadView);
-      boolean block = parsedArgs.getOptionalValue(OPT_BLOCKING)
-                            .map(Boolean::parseBoolean)
-                            .orElse(true);
+      boolean block;
+      try {
+         block = parseBlocking(parsedArgs.getOptionValue(OPT_BLOCKING));
+      } catch (IllegalArgumentException e) {
+         return new CliCommandResult(false, e.getMessage());
+      }
 
       CliCommandResult result = new CliCommandResult(true, null, block);
       if (block)
          downloadView.setCommandResult(result);
 
-      return result;
+      boolean success = controller.requestDownloadFrom(metadata, downloadView);
+      return success ? result : new CliCommandResult(false, null);
+   }
+
+   private File promptTarget() throws IOException {
+      System.out.print("Please enter a target path for the download (q to quit): ");
+      String path = in.readLine();
+      if (path.equals("q") || path.equals("quit"))
+         return null;
+
+      if (StringUtils.isBlank(path))
+         return promptTarget();
+
+      File file = new File(path);
+      if (!file.isDirectory()) {
+         File parent = file.getParentFile();
+         if (parent == null)
+            System.out.println("Invalid path \"" + path + "\"");
+         else if (!parent.exists())
+            System.out.println("Parent directory " + file.getParentFile().getAbsolutePath() + " not found.");
+         else
+            return file;
+
+         return promptTarget();
+      }
+      return file;
+   }
+
+   private boolean parseBlocking(String input) throws IllegalArgumentException {
+      if (input == null)
+         return true;
+
+      if (input.equals("true"))
+         return true;
+      else if (input.equals("false"))
+         return false;
+
+      String msg = String.format("Optionvalue for option \"%s\" must be one of \"%s\" or \"%s\". Was \"%s\"",
+                                 OPT_BLOCKING,
+                                 "true",
+                                 "false");
+
+      throw new IllegalArgumentException(msg);
    }
 
    @Override

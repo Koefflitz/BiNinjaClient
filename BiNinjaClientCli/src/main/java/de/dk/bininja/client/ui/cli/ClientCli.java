@@ -3,6 +3,7 @@ package de.dk.bininja.client.ui.cli;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -11,6 +12,7 @@ import de.dk.bininja.client.ui.UI;
 import de.dk.bininja.client.ui.UIController;
 import de.dk.bininja.ui.cli.Cli;
 import de.dk.bininja.ui.cli.CliCommand;
+import de.dk.bininja.ui.cli.ConnectCommand;
 import de.dk.util.StringUtils;
 
 /**
@@ -21,11 +23,17 @@ public class ClientCli extends Cli<UIController> implements UI {
    private static final String PROMPT_NOT_CONNECTED = "BiNinja (n.c.)>";
    private static final String PROMPT_CONNECTED = "BiNinjaClient>";
 
+   private final Collection<? extends CliCommand<? super UIController>> commands_connected
+      = Arrays.asList(new DownloadCommand(this::newDownload, in));
+
+   private final Collection<? extends CliCommand<? super UIController>> commands_offline
+      = Arrays.asList(new ConnectCommand());
+
    private DownloadCliViewManager downloads = new DownloadCliViewManager();
 
    {
-      commands.add(new DownloadCommand(this::newDownload, in));
       commands.add(new ExitCommand(in));
+      commands.addAll(commands_offline);
    }
 
    public ClientCli(UIController controller, BufferedReader in) {
@@ -104,6 +112,22 @@ public class ClientCli extends Cli<UIController> implements UI {
       } catch (IOException | InterruptedException e) {
          return null;
       }
+   }
+
+   @Override
+   public void connected() {
+      System.err.println("connected");
+      commands.removeAll(commands_offline);
+      commands.addAll(commands_connected);
+      super.connected();
+   }
+
+   @Override
+   protected void disconnected() {
+      System.err.println("disconnected");
+      commands.removeAll(commands_connected);
+      commands.addAll(commands_offline);
+      super.disconnected();
    }
 
    @Override
