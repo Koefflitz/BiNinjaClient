@@ -1,0 +1,12 @@
+[submodule "BiNinjaClientCli"]
+	path = BiNinjaClientCli
+	url = ./BiNinjaClientCli/
+[submodule "BiNinjaClientGui"]
+	path = BiNinjaClientGui
+	url = ./BiNinjaClientGui/
+[submodule "BiNinjaClientAssembly"]
+	path = BiNinjaClientAssembly
+	url = ./BiNinjaClientAssembly/
+[submodule "BiNinjaClientCore"]
+	path = BiNinjaClientCore
+	url = ./BiNinjaClientCore/
