@@ -1,12 +1,12 @@
 [submodule "BiNinjaClientCli"]
 	path = BiNinjaClientCli
-	url = ./BiNinjaClientCli/
+	url = https://github.com/Koefflitz/BiNinjaClientCli.git
 [submodule "BiNinjaClientGui"]
 	path = BiNinjaClientGui
-	url = ./BiNinjaClientGui/
+	url = https://github.com/Koefflitz/BiNinjaClientGui.git
 [submodule "BiNinjaClientAssembly"]
 	path = BiNinjaClientAssembly
-	url = ./BiNinjaClientAssembly/
+	url = https://github.com/Koefflitz/BiNinjaClientAssembly.git
 [submodule "BiNinjaClientCore"]
 	path = BiNinjaClientCore
-	url = ./BiNinjaClientCore/
+	url = https://github.com/Koefflitz/BiNinjaClientCore.git
