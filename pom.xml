@@ -13,6 +13,8 @@
 
    <modules>
       <module>BiNinjaClientCore</module>
+      <module>BiNinjaClientCli</module>
+      <module>BiNinjaClientAssembly</module>
    </modules>
 
    <profiles>
@@ -20,14 +22,6 @@
          <id>full</id>
          <modules>
             <module>BiNinjaClientGui</module>
-            <module>BiNinjaClientCli</module>
-            <module>BiNinjaClientAssembly</module>
-         </modules>
-      </profile>
-      <profile>
-         <id>cli-only</id>
-         <modules>
-            <module>BiNinjaClientCli</module>
             <module>BiNinjaClientAssembly</module>
          </modules>
       </profile>
